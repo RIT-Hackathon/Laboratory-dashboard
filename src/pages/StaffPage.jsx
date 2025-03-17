@@ -20,9 +20,17 @@ const StaffPage = () => {
 
   return (
     <DashboardLayout>
-      <h1 className="text-2xl font-bold mb-4">Manage Staff 👨‍⚕️</h1>
-      <AddStaffForm onAdd={addStaff} />
-      <StaffList staffList={staffList} onDelete={deleteStaff} />
+      <h1 className="text-2xl font-bold mb-6 text-gray-900">Manage Staff 👨‍⚕️</h1>
+      
+      {/* Add Staff Form */}
+      <div className="bg-white border border-gray-300 rounded-lg shadow p-6 mb-6">
+        <AddStaffForm onAdd={addStaff} />
+      </div>
+
+      {/* Staff List */}
+      <div className="bg-white border border-gray-300 rounded-lg shadow p-6">
+        <StaffList staffList={staffList} onDelete={deleteStaff} />
+      </div>
     </DashboardLayout>
   );
 };

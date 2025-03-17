@@ -22,30 +22,30 @@ const AddStaffForm = ({ onAdd }) => {
   return (
     <form
       onSubmit={handleSubmit}
-      className="bg-gray-800 p-4 rounded-lg shadow mb-6"
+      className="p-4 rounded-lg border border-gray-300 bg-white shadow mb-6"
     >
-      <h2 className="text-lg font-semibold mb-4">➕ Add New Staff Member</h2>
+      <h2 className="text-lg font-semibold mb-4 text-gray-900">➕ Add New Staff Member</h2>
       <div className="flex flex-wrap gap-4">
         <input
           name="name"
           value={formData.name}
           onChange={handleChange}
           placeholder="Full Name"
-          className="bg-gray-900 text-white p-2 rounded w-full md:w-1/3"
+          className="border border-gray-300 p-2 rounded w-full md:w-1/3 focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
         <input
           name="email"
           value={formData.email}
           onChange={handleChange}
           placeholder="Email"
-          className="bg-gray-900 text-white p-2 rounded w-full md:w-1/3"
+          className="border border-gray-300 p-2 rounded w-full md:w-1/3 focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
         <input
           name="role"
           value={formData.role}
           onChange={handleChange}
           placeholder="Role"
-          className="bg-gray-900 text-white p-2 rounded w-full md:w-1/3"
+          className="border border-gray-300 p-2 rounded w-full md:w-1/3 focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
         <button
           type="submit"
