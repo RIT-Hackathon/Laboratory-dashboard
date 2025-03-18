@@ -1,51 +1,50 @@
-import React, { useState } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import Home from './pages/Home';
-// import LoginPage from './pages/LoginPage
-import AppointmentsPage from './pages/appointments/AppointmentsPage';
-import DashboardLayout from './components/layout/DashboardLayout';
-import AuthLayout from './components/layout/AuthLayout';
-import StaffPage from './pages/staff/StaffList';
-import PatientsPage from './pages/patients/PatientsPage';
-import LoginPage from './pages/LoginPage';
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import DashboardPage from '../src/pages/dashboard/DashboardPage';
+import AppointmentsPage from '../src/pages/appointments/AppointmentsPage';
+import StaffPage from '../src/pages/staff/StaffList';
+import PatientsPage from '../src/pages/patients/PatientsPage';
+import LoginPage from '../src/pages/LoginPage';
+import Sidebar from './components/layout/Sidebar';
+
 
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const handleLogin = (username, password) => {
-    console.log('Attempted Login:', { username, password });
-
-    if (username === 'admin' && password === 'swasthya123') {
-      console.log('Login successful!');
+    if (username === 'labstaff' && password === 'shiftstart123') {
       setIsLoggedIn(true);
     } else {
-      alert('Invalid credentials!');
-      console.log('Login failed!');
+      alert('Invalid credentials');
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gray-100">
-      {isLoggedIn ? (
-        <BrowserRouter>
-          <Routes>
-            {/* Routes that use Dashboard Layout (after login) */}
-            <Route element={<DashboardLayout />}>
-              <Route path="/" element={<Home />} />
-              <Route path="/appointments" element={<AppointmentsPage />} />
-              <Route path="/staff" element={<StaffPage />} />
-              <Route path="/patients" element={<PatientsPage />} />
-              {/* Add more dashboard-protected routes here */}
-            </Route>
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+  };
 
-            {/* Optional: 404 Not Found route */}
-            <Route path="*" element={<div className="text-center mt-10 text-xl font-semibold">404 - Page Not Found</div>} />
+  return (
+    <Router>
+      <div className="flex h-screen">
+        <Sidebar isLoggedIn={isLoggedIn} onLogout={handleLogout} />
+        <div className="flex-1 overflow-y-auto bg-gray-100 p-6">
+          <Routes>
+            <Route path="/" element={<DashboardPage />} />
+            <Route path="/appointments" element={<AppointmentsPage />} />
+            <Route
+              path="/staff"
+              element={isLoggedIn ? <StaffPage /> : <Navigate to="/login" replace />}
+            />
+            <Route
+              path="/patients"
+              element={isLoggedIn ? <PatientsPage /> : <Navigate to="/login" replace />}
+            />
+            <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
-        </BrowserRouter>
-      ) : (
-        <LoginPage onLogin={handleLogin} />
-      )}
-    </div>
+        </div>
+      </div>
+    </Router>
   );
 };
 
