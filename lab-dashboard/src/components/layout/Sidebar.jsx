@@ -1,63 +1,82 @@
-import React from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import React from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Home, Calendar, Users, ClipboardList, LogOut, LogIn } from "lucide-react";
 
 const Sidebar = ({ isLoggedIn, onLogout }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const activeClass = 'bg-blue-500 text-white rounded px-3 py-2';
-  const normalClass = 'text-gray-700 px-3 py-2 rounded hover:bg-blue-100';
 
-  const handleLoginRedirect = () => {
-    navigate('/login');
-  };
+  const menuItems = [
+    { name: "Dashboard", path: "/", icon: <Home size={20} /> },
+    { name: "Appointments", path: "/appointments", icon: <ClipboardList size={20} /> },
+  ];
+
+  const privateItems = [
+    { name: "Staff", path: "/staff", icon: <Users size={20} /> },
+    { name: "Patients", path: "/patients", icon: <Calendar size={20} /> },
+  ];
+
+  const handleLoginRedirect = () => navigate("/login");
 
   return (
-    <div className="w-64 bg-white border-r h-full flex flex-col p-4 justify-between">
-      <div>
-        <h1 className="text-2xl font-bold text-blue-700 mb-6">Swasthya Lab</h1>
-        <nav className="flex flex-col space-y-2">
-          <Link to="/" className={location.pathname === '/' ? activeClass : normalClass}>
-            Dashboard
-          </Link>
-          <Link
-            to="/appointments"
-            className={location.pathname === '/appointments' ? activeClass : normalClass}
-          >
-            Appointments
-          </Link>
-          {isLoggedIn && (
-            <>
-              <Link
-                to="/staff"
-                className={location.pathname === '/staff' ? activeClass : normalClass}
-              >
-                Staff
-              </Link>
-              <Link
-                to="/patients"
-                className={location.pathname === '/patients' ? activeClass : normalClass}
-              >
-                Patients
-              </Link>
-            </>
-          )}
-        </nav>
+    <div className="w-72 h-screen bg-gradient-to-b from-white to-gray-100 shadow-2xl border-r flex flex-col p-6 space-y-6">
+      {/* Logo Section */}
+      <div className="flex items-center space-x-2 text-blue-800 text-2xl font-bold">
+        🏥 <h1>Swasthya Lab</h1>
       </div>
 
-      <div className="text-sm text-gray-500 mt-4">
+      {/* Navigation Links */}
+      <nav className="flex flex-col space-y-3">
+        {menuItems.map((item) => (
+          <Link
+            key={item.path}
+            to={item.path}
+            className={`flex items-center space-x-3 p-3 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-lg ${
+              location.pathname === item.path ? "bg-blue-600 text-white shadow-xl" : "text-gray-700 bg-white shadow-md"
+            }`}
+          >
+            {item.icon}
+            <span>{item.name}</span>
+          </Link>
+        ))}
+
+        {/* Private Links */}
+        {isLoggedIn && (
+          <>
+            <p className="text-gray-500 text-sm font-semibold mt-4 mb-2">MANAGEMENT</p>
+            {privateItems.map((item) => (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={`flex items-center space-x-3 p-3 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-lg ${
+                  location.pathname === item.path ? "bg-blue-600 text-white shadow-xl" : "text-gray-700 bg-white shadow-md"
+                }`}
+              >
+                {item.icon}
+                <span>{item.name}</span>
+              </Link>
+            ))}
+          </>
+        )}
+      </nav>
+
+      {/* Bottom Section */}
+      <div className="mt-auto">
         {isLoggedIn ? (
           <button
             onClick={onLogout}
-            className="text-red-500 hover:underline mt-4 block"
+            className="w-full flex items-center space-x-2 p-3 rounded-lg text-red-500 hover:bg-red-100 transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-lg"
           >
-            Logout
+            <LogOut size={20} />
+            <span>Logout</span>
           </button>
         ) : (
           <button
             onClick={handleLoginRedirect}
-            className="text-blue-600 hover:underline mt-4 block"
+            className="w-full flex items-center space-x-2 p-3 rounded-lg text-blue-600 hover:bg-blue-100 transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-lg"
           >
-            Login
+            <LogIn size={20} />
+            <span>Login</span>
           </button>
         )}
       </div>

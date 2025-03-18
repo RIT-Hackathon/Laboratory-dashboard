@@ -1,238 +1,108 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
+import { CheckCircle, Calendar, Clock, Trash2, Edit, Save, XCircle } from "lucide-react";
 
 const AppointmentsPage = () => {
   const [appointments, setAppointments] = useState([
-    {
-      id: 1,
-      patientName: 'John Doe',
-      testName: 'Blood Test',
-      date: '2025-03-20',
-      time: '10:00',
-    },
-    {
-      id: 2,
-      patientName: 'Jane Smith',
-      testName: 'X-Ray',
-      date: '2025-03-21',
-      time: '14:30',
-    },
+    { id: 1, patientName: "John Doe", testName: "Blood Test", date: "2025-03-20", time: "10:00", contact: "johndoe@example.com" },
+    { id: 2, patientName: "Jane Smith", testName: "X-Ray", date: "2025-03-21", time: "14:30", contact: "janesmith@example.com" },
   ]);
+  const [rescheduleId, setRescheduleId] = useState(null);
+  const [newSchedule, setNewSchedule] = useState({ date: "", time: "" });
 
-  const [newAppointment, setNewAppointment] = useState({
-    patientName: '',
-    testName: '',
-    date: '',
-    time: '',
-  });
+  // Accept Appointment
+  const handleAccept = (id, patientName, contact) => {
+    alert(`Appointment for ${patientName} successfully confirmed!\nNotification sent to ${contact}`);
+  };
 
-  const [editId, setEditId] = useState(null);
-  const [editedAppointment, setEditedAppointment] = useState({});
+  // Open Reschedule Popup
+  const handleReschedule = (id) => {
+    setRescheduleId(id);
+  };
 
-  // Add Appointment
-  const handleAdd = () => {
-    if (
-      newAppointment.patientName &&
-      newAppointment.testName &&
-      newAppointment.date &&
-      newAppointment.time
-    ) {
-      const newAppt = {
-        ...newAppointment,
-        id: Date.now(),
-      };
-      setAppointments([...appointments, newAppt]);
-      setNewAppointment({ patientName: '', testName: '', date: '', time: '' });
-    }
+  // Close Reschedule Popup
+  const closeReschedule = () => {
+    setRescheduleId(null);
+    setNewSchedule({ date: "", time: "" });
+  };
+
+  // Save New Schedule
+  const saveReschedule = () => {
+    setAppointments(appointments.map((appt) => appt.id === rescheduleId ? { ...appt, ...newSchedule } : appt));
+    closeReschedule();
   };
 
   // Delete Appointment
   const handleDelete = (id) => {
-    const updated = appointments.filter((appt) => appt.id !== id);
-    setAppointments(updated);
-  };
-
-  // Start Editing
-  const handleEdit = (appt) => {
-    setEditId(appt.id);
-    setEditedAppointment({ ...appt });
-  };
-
-  // Save Edited
-  const handleSave = () => {
-    const updated = appointments.map((appt) =>
-      appt.id === editId ? editedAppointment : appt
-    );
-    setAppointments(updated);
-    setEditId(null);
-    setEditedAppointment({});
+    setAppointments(appointments.filter((appt) => appt.id !== id));
   };
 
   return (
-    <div className="p-6">
-      <h2 className="text-3xl font-bold mb-6">Appointments</h2>
-
-      {/* Add Appointment */}
-      <div className="bg-white p-4 rounded shadow mb-6 flex flex-wrap gap-4">
-        <input
-          type="text"
-          placeholder="Patient Name"
-          className="border px-3 py-2 rounded w-48"
-          value={newAppointment.patientName}
-          onChange={(e) =>
-            setNewAppointment({ ...newAppointment, patientName: e.target.value })
-          }
-        />
-        <input
-          type="text"
-          placeholder="Test Name"
-          className="border px-3 py-2 rounded w-48"
-          value={newAppointment.testName}
-          onChange={(e) =>
-            setNewAppointment({ ...newAppointment, testName: e.target.value })
-          }
-        />
-        <input
-          type="date"
-          className="border px-3 py-2 rounded w-44"
-          value={newAppointment.date}
-          onChange={(e) =>
-            setNewAppointment({ ...newAppointment, date: e.target.value })
-          }
-        />
-        <input
-          type="time"
-          className="border px-3 py-2 rounded w-36"
-          value={newAppointment.time}
-          onChange={(e) =>
-            setNewAppointment({ ...newAppointment, time: e.target.value })
-          }
-        />
-        <button
-          onClick={handleAdd}
-          className="bg-blue-600 text-white px-5 py-2 rounded hover:bg-blue-700 transition"
-        >
-          Add Appointment
-        </button>
-      </div>
+    <div className="p-8 min-h-screen bg-gradient-to-br from-gray-200 to-gray-100 flex flex-col items-center relative">
+      <h2 className="text-4xl font-extrabold text-blue-700 drop-shadow-lg mb-6">Appointments</h2>
 
       {/* Appointment Table */}
-      <div className="bg-white p-4 rounded shadow">
+      <div className="bg-white shadow-2xl rounded-2xl p-6 w-full max-w-4xl overflow-hidden">
         <table className="w-full text-left">
           <thead>
-            <tr className="border-b text-gray-700">
-              <th className="p-2">Patient</th>
-              <th className="p-2">Test</th>
-              <th className="p-2">Date</th>
-              <th className="p-2">Time</th>
-              <th className="p-2 text-center">Actions</th>
+            <tr className="bg-blue-600 text-white">
+              <th className="p-3">Patient</th>
+              <th className="p-3">Test</th>
+              <th className="p-3">Date</th>
+              <th className="p-3">Time</th>
+              <th className="p-3 text-center">Actions</th>
             </tr>
           </thead>
           <tbody>
             {appointments.map((appt) => (
-              <tr key={appt.id} className="border-b hover:bg-gray-50">
-                {editId === appt.id ? (
-                  <>
-                    <td className="p-2">
-                      <input
-                        type="text"
-                        className="border px-2 py-1 rounded w-full"
-                        value={editedAppointment.patientName}
-                        onChange={(e) =>
-                          setEditedAppointment({
-                            ...editedAppointment,
-                            patientName: e.target.value,
-                          })
-                        }
-                      />
-                    </td>
-                    <td className="p-2">
-                      <input
-                        type="text"
-                        className="border px-2 py-1 rounded w-full"
-                        value={editedAppointment.testName}
-                        onChange={(e) =>
-                          setEditedAppointment({
-                            ...editedAppointment,
-                            testName: e.target.value,
-                          })
-                        }
-                      />
-                    </td>
-                    <td className="p-2">
-                      <input
-                        type="date"
-                        className="border px-2 py-1 rounded w-full"
-                        value={editedAppointment.date}
-                        onChange={(e) =>
-                          setEditedAppointment({
-                            ...editedAppointment,
-                            date: e.target.value,
-                          })
-                        }
-                      />
-                    </td>
-                    <td className="p-2">
-                      <input
-                        type="time"
-                        className="border px-2 py-1 rounded w-full"
-                        value={editedAppointment.time}
-                        onChange={(e) =>
-                          setEditedAppointment({
-                            ...editedAppointment,
-                            time: e.target.value,
-                          })
-                        }
-                      />
-                    </td>
-                    <td className="p-2 text-center">
-                      <button
-                        onClick={handleSave}
-                        className="text-green-600 hover:underline mr-3"
-                      >
-                        Save
-                      </button>
-                      <button
-                        onClick={() => setEditId(null)}
-                        className="text-gray-600 hover:underline"
-                      >
-                        Cancel
-                      </button>
-                    </td>
-                  </>
-                ) : (
-                  <>
-                    <td className="p-2 font-medium">{appt.patientName}</td>
-                    <td className="p-2">
-                      <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">
-                        {appt.testName}
-                      </span>
-                    </td>
-                    <td className="p-2">{appt.date}</td>
-                    <td className="p-2">{appt.time}</td>
-                    <td className="p-2 text-center flex justify-center gap-4">
-                      <button
-                        onClick={() => handleEdit(appt)}
-                        className="text-blue-600 hover:underline"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(appt.id)}
-                        className="text-red-600 hover:underline"
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </>
-                )}
+              <tr key={appt.id} className="border-b hover:bg-gray-100 transition">
+                <td className="p-3 font-medium">{appt.patientName}</td>
+                <td className="p-3 text-blue-600">{appt.testName}</td>
+                <td className="p-3">{appt.date}</td>
+                <td className="p-3">{appt.time}</td>
+                <td className="p-3 text-center flex justify-center gap-4">
+                  <button onClick={() => handleAccept(appt.id, appt.patientName, appt.contact)}
+                    className="bg-green-500 text-white px-3 py-2 rounded-lg shadow-md hover:bg-green-600 flex items-center gap-1">
+                    <CheckCircle size={16} /> Accept
+                  </button>
+                  <button onClick={() => handleReschedule(appt.id)}
+                    className="bg-yellow-500 text-white px-3 py-2 rounded-lg shadow-md hover:bg-yellow-600 flex items-center gap-1">
+                    <Clock size={16} /> Reschedule
+                  </button>
+                  <button onClick={() => handleDelete(appt.id)}
+                    className="bg-red-500 text-white px-3 py-2 rounded-lg shadow-md hover:bg-red-600 flex items-center gap-1">
+                    <Trash2 size={16} /> Delete
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
-        {appointments.length === 0 && (
-          <p className="text-gray-500 text-center mt-4">No appointments yet.</p>
-        )}
       </div>
+
+      {/* Reschedule Popup */}
+      {rescheduleId !== null && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg shadow-xl w-96">
+            <h2 className="text-xl font-bold mb-4">Reschedule Appointment</h2>
+            <input
+              type="date"
+              className="border px-3 py-2 rounded w-full mb-3"
+              value={newSchedule.date}
+              onChange={(e) => setNewSchedule({ ...newSchedule, date: e.target.value })}
+            />
+            <input
+              type="time"
+              className="border px-3 py-2 rounded w-full mb-3"
+              value={newSchedule.time}
+              onChange={(e) => setNewSchedule({ ...newSchedule, time: e.target.value })}
+            />
+            <div className="flex justify-end gap-4">
+              <button onClick={saveReschedule} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Save</button>
+              <button onClick={closeReschedule} className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
