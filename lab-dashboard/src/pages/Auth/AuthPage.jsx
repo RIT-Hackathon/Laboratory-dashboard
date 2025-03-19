@@ -24,7 +24,7 @@ const AuthPage = ({ onLogin }) => {
   }, [isSignUp]);
 
   // Backend API Base URL
-  const API_BASE = "https://pd-an-painted-hollow.trycloudflare.com/api/auth";
+  const API_BASE = "http://localhost:8000/api/auth/register-patient";
 
   // Redirect to dashboard based on user role
   const redirectToDashboard = (userRole) => {
@@ -40,7 +40,7 @@ const AuthPage = ({ onLogin }) => {
   // Handle Login
   const handleLogin = async () => {
     try {
-      const response = await fetch(`${API_BASE}/login`, {
+      const response = await fetch(`${API_BASE}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: user.email, password: user.password }),
@@ -63,14 +63,14 @@ const AuthPage = ({ onLogin }) => {
   // Handle Signup
   const handleSignup = async () => {
     try {
-      const response = await fetch(`${API_BASE}/register-patient`, {
+      const response = await fetch(`${API_BASE}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(user),
       });
 
       const data = await response.json();
-
+      console.log(data);
       if (response.ok) {
         setSuccessMessage("Registration successful! Redirecting...");
         setTimeout(() => {
