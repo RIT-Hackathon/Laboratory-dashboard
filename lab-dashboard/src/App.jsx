@@ -1,18 +1,18 @@
 import React, { useState } from "react";
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
-import DashboardPage from "./pages/dashboard/AdminDashboard";
+import DashboardPage from "./pages/dashboard/Admin/AdminDashboard";
 import AppointmentsPage from "./pages/appointments/AppointmentsPage";
 import StaffPage from "./pages/staff/StaffList";
 import PatientsPage from "./pages/patients/PatientsPage";
 import Sidebar from "./components/layout/Sidebar";
 import HomePage from "./pages/Home/HomePage";
-import CustomerDashboard from "./pages/dashboard/CustomerDashboard";
-import StaffDashboard from "./pages/dashboard/StaffDashboard";
+import CustomerDashboard from "./pages/dashboard/Customer/CustomerDashboard";
+import StaffDashboard from "./pages/dashboard/Staff/StaffDashboard";
 import AuthPage from "./pages/Auth/AuthPage";
 
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userRole, setUserRole] = useState(null); // "staff", "admin", "customer"
+  const [userRole, setUserRole] = useState(null); 
 
   const handleLogin = (role) => {
     setIsLoggedIn(true);
