@@ -7,51 +7,37 @@ const AuthPage = ({ onLogin }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
-  const role = queryParams.get("role") || "customer"; // Default role to 'customer'
+  const role = queryParams.get("role") || "patient";
 
-  const [isSignUp, setIsSignUp] = useState(false); // Toggle between Signup & Login
-  const [user, setUser] = useState({
-    email: "",
-    password: "",
-    name: "",
-    phone: "",
-  });
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [user, setUser] = useState({ email: "", password: "", name: "", phone: "", labName: "", labAddress: "", testTypes: "" });
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
   useEffect(() => {
-    setError(""); // Clear error when switching modes
+    setError("");
+    setSuccessMessage("");
   }, [isSignUp]);
 
-  // Backend API Base URL
-  const API_BASE = "http://localhost:8000/api/auth/register-patient";
+  const API_BASE = "http://localhost:8000/api/auth";
 
-  // Redirect to dashboard based on user role
   const redirectToDashboard = (userRole) => {
-    if (userRole === "admin") {
-      navigate("/admin-dashboard");
-    } else if (userRole === "staff") {
-      navigate("/staff-dashboard");
-    } else {
-      navigate("/customer-dashboard"); // Default to customer
-    }
+    navigate(userRole === "admin" ? "/admin-dashboard" : "/patient-dashboard");
   };
 
-  // Handle Login
   const handleLogin = async () => {
     try {
-      const response = await fetch(`${API_BASE}`, {
+      const response = await fetch(`${API_BASE}/sign-in`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: user.email, password: user.password }),
       });
-
+  
       const data = await response.json();
-
       if (response.ok) {
-        const userRole = data.role || "customer";
-        onLogin(userRole);
-        redirectToDashboard(userRole);
+        localStorage.setItem("user", JSON.stringify(data)); // 🔹 Store user data
+        onLogin(data.role);
+        redirectToDashboard(data.role);
       } else {
         setError(data.message || "Invalid credentials");
       }
@@ -59,23 +45,37 @@ const AuthPage = ({ onLogin }) => {
       setError("Network error. Please try again.");
     }
   };
-
-  // Handle Signup
+  
   const handleSignup = async () => {
+    if (role === "staff") {
+      setError("Staff registration is not allowed.");
+      return;
+    }
+  
+    // Ensure testTypes is an array
+    const formattedUser = {
+      ...user,
+      testTypes: Array.isArray(user.testTypes)
+        ? user.testTypes
+        : user.testTypes.split(",").map((type) => type.trim()), // Convert comma-separated string to array
+    };
+  
+    const endpoint = role === "admin" ? `${API_BASE}/register-lab` : `${API_BASE}/register-patient`;
+  
     try {
-      const response = await fetch(`${API_BASE}`, {
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(user),
+        body: JSON.stringify(formattedUser),
       });
-
+  
       const data = await response.json();
       console.log(data);
       if (response.ok) {
         setSuccessMessage("Registration successful! Redirecting...");
         setTimeout(() => {
-          onLogin("customer"); // Default new user role
-          redirectToDashboard("customer");
+          onLogin(role);
+          redirectToDashboard(role);
         }, 1500);
       } else {
         setError(data.message || "Signup failed");
@@ -84,19 +84,25 @@ const AuthPage = ({ onLogin }) => {
       setError("Network error. Please try again.");
     }
   };
+  
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-6">
-      <div className="bg-white shadow-2xl rounded-2xl p-8 max-w-md w-full text-center">
-        <h1 className="text-3xl font-bold text-gray-800 mb-4">
+    <div className="min-h-screen flex items-center justify-center ">
+      <div className="relative bg-white/20 backdrop-blur-lg shadow-2xl rounded-3xl p-8 max-w-md w-full text-center border border-white/30">
+        {/* Floating Top Glow */}
+        <div className="absolute -top-5 left-1/2 transform -translate-x-1/2 w-24 h-24 bg-purple-400/30 rounded-full blur-2xl opacity-50"></div>
+
+        {/* Header */}
+        <h1 className="text-4xl font-extrabold text-back drop-shadow-md">
           {isSignUp ? "Sign Up" : "Login"} as {role.charAt(0).toUpperCase() + role.slice(1)}
         </h1>
 
-        {error && <p className="text-red-500">{error}</p>}
-        {successMessage && <p className="text-green-500">{successMessage}</p>}
+        {/* Error & Success Messages */}
+        {error && <p className="text-red-500 font-medium mt-3">{error}</p>}
+        {successMessage && <p className="text-green-500 font-medium mt-3">{successMessage}</p>}
 
         {/* Form Component */}
-        <AuthForm isSignUp={isSignUp} user={user} setUser={setUser} />
+        <AuthForm isSignUp={isSignUp} user={user} setUser={setUser} role={role} />
 
         {/* Buttons Component */}
         <AuthButtons
@@ -104,6 +110,7 @@ const AuthPage = ({ onLogin }) => {
           handleLogin={handleLogin}
           handleSignup={handleSignup}
           setIsSignUp={setIsSignUp}
+          role={role}
         />
       </div>
     </div>

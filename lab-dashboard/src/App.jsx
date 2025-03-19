@@ -38,19 +38,19 @@ const App = () => {
 
 const MainLayout = ({ isLoggedIn, userRole, handleLogout, handleLogin }) => {
   const location = useLocation();
-  const hideSidebarRoutes = ["/login", "/signup", "/", "/customer-dashboard"];
+  const hideSidebarRoutes = ["/login", "/signup", "/", "/customer-dashboard", "/patient-dashboard"];
 
   return (
     <div className="flex h-screen">
       {!hideSidebarRoutes.includes(location.pathname) && (
-        <Sidebar isLoggedIn={isLoggedIn} onLogout={handleLogout} />
+        <Sidebar isLoggedIn={isLoggedIn} onLogout={handleLogout} role={userRole} />
       )}
       <div className="flex-1 overflow-y-auto bg-gray-100 p-6">
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/staff-dashboard" element={<StaffDashboard />} />
           <Route path="/admin-dashboard" element={<DashboardPage />} />
-          <Route path="/customer-dashboard" element={<CustomerDashboard />} />
+          <Route path="/patient-dashboard" element={<CustomerDashboard />} />
           <Route path="/appointments" element={<AppointmentsPage />} />
           <Route path="/staff" element={<StaffPage />} />
           <Route path="/patients" element={<PatientsPage />} />

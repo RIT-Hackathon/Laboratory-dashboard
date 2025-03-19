@@ -1,29 +1,25 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit";
 
-// Async Thunk to Fetch Appointments from Backend
-export const fetchAppointments = createAsyncThunk("appointments/fetchAppointments", async () => {
-  const response = await fetch("https://your-api.com/appointments");
-  return response.json();
-});
+const initialState = {
+  list: [
+    { id: 1, name: "John Doe", date: "2025-03-19", time: "10:00 AM", status: "Confirmed" },
+    { id: 2, name: "Jane Smith", date: "2025-03-19", time: "12:30 PM", status: "Pending" },
+  ],
+};
 
 const appointmentsSlice = createSlice({
   name: "appointments",
-  initialState: { list: [], loading: false, error: null },
-  reducers: {},
-  extraReducers: (builder) => {
-    builder
-      .addCase(fetchAppointments.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(fetchAppointments.fulfilled, (state, action) => {
-        state.loading = false;
-        state.list = action.payload;
-      })
-      .addCase(fetchAppointments.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message;
-      });
+  initialState,
+  reducers: {
+    updateAppointmentStatus: (state, action) => {
+      const { id, status } = action.payload;
+      const appointment = state.list.find((apt) => apt.id === id);
+      if (appointment) {
+        appointment.status = status;
+      }
+    },
   },
 });
 
+export const { updateAppointmentStatus } = appointmentsSlice.actions;
 export default appointmentsSlice.reducer;

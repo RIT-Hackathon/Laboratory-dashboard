@@ -4,37 +4,43 @@ import { useNavigate } from "react-router-dom";
 const HomePage = () => {
   const navigate = useNavigate();
 
-  const handleContinue = (userType) => {
-    navigate(`/login?role=${userType}`); // Pass role as query param
+  const handleContinue = (role) => {
+    navigate(`/login?role=${role}`);
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-100 to-blue-300 p-6">
-      <div className="bg-white shadow-2xl rounded-2xl p-8 max-w-lg w-full text-center">
-        <h1 className="text-3xl font-bold text-gray-800 mb-6">Welcome to Swasthya Lab</h1>
-        <p className="text-gray-600 mb-6">Continue as:</p>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-r from-blue-100 to-purple-200 p-6">
+      <h1 className="text-4xl font-extrabold text-gray-900 mb-8 drop-shadow-lg">Welcome to Swasthya Lab</h1>
 
-        <div className="space-y-4">
-          <button
-            onClick={() => handleContinue("staff")}
-            className="w-full bg-blue-500 text-white px-6 py-3 rounded-lg text-lg font-semibold shadow-md hover:bg-blue-600 transition-all"
-          >
-            Continue as Staff
-          </button>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        {/* Admin Card */}
+        <div
+          onClick={() => handleContinue("admin")}
+          className="group cursor-pointer relative bg-white/20 backdrop-blur-xl border border-white/30 shadow-2xl rounded-3xl p-8 text-center transition-all duration-300 transform perspective-1000 hover:scale-105 hover:-translate-y-2 hover:shadow-3xl"
+        >
+          <div className="absolute -top-5 left-1/2 transform -translate-x-1/2 w-20 h-20 bg-green-400/30 rounded-full blur-2xl opacity-50"></div>
+          <h2 className="text-2xl font-bold text-gray-800 group-hover:text-green-600 transition-colors duration-300">Admin</h2>
+          <p className="text-gray-600 mt-2">Manage Lab Operations</p>
+        </div>
 
-          <button
-            onClick={() => handleContinue("admin")}
-            className="w-full bg-green-500 text-white px-6 py-3 rounded-lg text-lg font-semibold shadow-md hover:bg-green-600 transition-all"
-          >
-            Continue as Admin
-          </button>
+        {/* Patient Card */}
+        <div
+          onClick={() => handleContinue("patient")}
+          className="group cursor-pointer relative bg-white/20 backdrop-blur-xl border border-white/30 shadow-2xl rounded-3xl p-8 text-center transition-all duration-300 transform perspective-1000 hover:scale-105 hover:-translate-y-2 hover:shadow-3xl"
+        >
+          <div className="absolute -top-5 left-1/2 transform -translate-x-1/2 w-20 h-20 bg-purple-400/30 rounded-full blur-2xl opacity-50"></div>
+          <h2 className="text-2xl font-bold text-gray-800 group-hover:text-purple-600 transition-colors duration-300">Patient</h2>
+          <p className="text-gray-600 mt-2">Book Appointments & View Reports</p>
+        </div>
 
-          <button
-            onClick={() => handleContinue("customer")}
-            className="w-full bg-purple-500 text-white px-6 py-3 rounded-lg text-lg font-semibold shadow-md hover:bg-purple-600 transition-all"
-          >
-            Continue as Patient
-          </button>
+        {/* Staff Card */}
+        <div
+          onClick={() => handleContinue("staff")}
+          className="group cursor-pointer relative bg-white/20 backdrop-blur-xl border border-white/30 shadow-2xl rounded-3xl p-8 text-center transition-all duration-300 transform perspective-1000 hover:scale-105 hover:-translate-y-2 hover:shadow-3xl"
+        >
+          <div className="absolute -top-5 left-1/2 transform -translate-x-1/2 w-20 h-20 bg-blue-400/30 rounded-full blur-2xl opacity-50"></div>
+          <h2 className="text-2xl font-bold text-gray-800 group-hover:text-blue-600 transition-colors duration-300">Staff</h2>
+          <p className="text-gray-600 mt-2">Assist in Lab Workflow</p>
         </div>
       </div>
     </div>

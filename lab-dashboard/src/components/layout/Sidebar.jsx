@@ -2,12 +2,12 @@ import React from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Home, Calendar, Users, ClipboardList, LogOut, LogIn } from "lucide-react";
 
-const Sidebar = ({ isLoggedIn, onLogout }) => {
+const Sidebar = ({ isLoggedIn, onLogout, role }) => {
   const location = useLocation();
   const navigate = useNavigate();
 
   const menuItems = [
-    { name: "Dashboard", path: "/", icon: <Home size={20} /> },
+    { name: "Dashboard", path: "/{role}-dashboard", icon: <Home size={20} /> },
     { name: "Appointments", path: "/appointments", icon: <ClipboardList size={20} /> },
   ];
 
