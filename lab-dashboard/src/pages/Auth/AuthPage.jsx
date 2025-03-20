@@ -7,7 +7,8 @@ const AuthPage = ({ onLogin }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
-  const role = queryParams.get("role") || "patient";
+  const role = queryParams.get("role") || "patient"; // Default role
+  // console.log(role);
 
   const [isSignUp, setIsSignUp] = useState(false);
   const [user, setUser] = useState({ email: "", password: "", name: "", phone: "", labName: "", labAddress: "", testTypes: "" });
@@ -21,10 +22,18 @@ const AuthPage = ({ onLogin }) => {
 
   const API_BASE = "http://localhost:8000/api/auth";
 
+  // Function to redirect based on user role
   const redirectToDashboard = (userRole) => {
-    navigate(userRole === "admin" ? "/admin-dashboard" : "/patient-dashboard");
+    if (userRole === "admin") {
+      navigate("/admin-dashboard");
+    } else if (userRole === "staff") {
+      navigate("/staff-dashboard");
+    } else {
+      navigate("/patient-dashboard");
+    }
   };
 
+  // Handle user login
   const handleLogin = async () => {
     try {
       const response = await fetch(`${API_BASE}/sign-in`, {
@@ -32,12 +41,13 @@ const AuthPage = ({ onLogin }) => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: user.email, password: user.password }),
       });
-  
+
       const data = await response.json();
+      console.log(data);
       if (response.ok) {
-        localStorage.setItem("user", JSON.stringify(data)); // 🔹 Store user data
-        onLogin(data.role);
-        redirectToDashboard(data.role);
+        localStorage.setItem("user", JSON.stringify(data)); // Store user data
+        onLogin(data.role);  // Use role from API response
+        redirectToDashboard(role);  // Redirect based on actual role
       } else {
         setError(data.message || "Invalid credentials");
       }
@@ -45,32 +55,31 @@ const AuthPage = ({ onLogin }) => {
       setError("Network error. Please try again.");
     }
   };
-  
+
+  // Handle user signup
   const handleSignup = async () => {
     if (role === "staff") {
       setError("Staff registration is not allowed.");
       return;
     }
-  
-    // Ensure testTypes is an array
+
     const formattedUser = {
       ...user,
-      testTypes: Array.isArray(user.testTypes)
-        ? user.testTypes
-        : user.testTypes.split(",").map((type) => type.trim()), // Convert comma-separated string to array
+      testTypes: Array.isArray(user.testTypes) 
+        ? user.testTypes 
+        : user.testTypes.split(",").map((type) => type.trim()), // Convert string to array
     };
-  
+
     const endpoint = role === "admin" ? `${API_BASE}/register-lab` : `${API_BASE}/register-patient`;
-  
+
     try {
       const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formattedUser),
       });
-  
+
       const data = await response.json();
-      console.log(data);
       if (response.ok) {
         setSuccessMessage("Registration successful! Redirecting...");
         setTimeout(() => {
@@ -84,12 +93,12 @@ const AuthPage = ({ onLogin }) => {
       setError("Network error. Please try again.");
     }
   };
-  
 
   return (
-    <div className="min-h-screen flex items-center justify-center ">
+    <div className="min-h-screen flex items-center justify-center">
       <div className="relative bg-white/20 backdrop-blur-lg shadow-2xl rounded-3xl p-8 max-w-md w-full text-center border border-white/30">
-        {/* Floating Top Glow */}
+        
+        {/* Floating Glow Effect */}
         <div className="absolute -top-5 left-1/2 transform -translate-x-1/2 w-24 h-24 bg-purple-400/30 rounded-full blur-2xl opacity-50"></div>
 
         {/* Header */}
