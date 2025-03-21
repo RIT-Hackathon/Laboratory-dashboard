@@ -8,12 +8,12 @@ const AuthPage = ({ onLogin }) => {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const role = queryParams.get("role") || "patient"; // Default role
-  // console.log(role);
 
   const [isSignUp, setIsSignUp] = useState(false);
   const [user, setUser] = useState({ email: "", password: "", name: "", phone: "", labName: "", labAddress: "", testTypes: "" });
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [userId, setUserId] = useState("");
 
   useEffect(() => {
     setError("");
@@ -22,18 +22,18 @@ const AuthPage = ({ onLogin }) => {
 
   const API_BASE = "http://localhost:8000/api/auth";
 
-  // Function to redirect based on user role
-  const redirectToDashboard = (userRole) => {
+  // ✅ Modified redirectToDashboard to accept dynamic userId
+  const redirectToDashboard = (userRole, userId = "") => {
     if (userRole === "admin") {
       navigate("/admin-dashboard");
     } else if (userRole === "staff") {
       navigate("/staff-dashboard");
     } else {
-      navigate("/patient-dashboard");
+      navigate(`/patient-dashboard/${userId}`); // Dynamic redirection for patient
     }
   };
 
-  // Handle user login
+  // ✅ Handle user login with userId stored and used in redirection
   const handleLogin = async () => {
     try {
       const response = await fetch(`${API_BASE}/sign-in`, {
@@ -46,8 +46,10 @@ const AuthPage = ({ onLogin }) => {
       console.log(data);
       if (response.ok) {
         localStorage.setItem("user", JSON.stringify(data)); // Store user data
+        const loggedInUserId = data.data.user.id;  // ✅ Get userId from API
+        setUserId(loggedInUserId);  // Save in state if needed elsewhere
         onLogin(data.role);  // Use role from API response
-        redirectToDashboard(role);  // Redirect based on actual role
+        redirectToDashboard(data.role, loggedInUserId);  // ✅ Redirect with userId
       } else {
         setError(data.message || "Invalid credentials");
       }
@@ -81,10 +83,13 @@ const AuthPage = ({ onLogin }) => {
 
       const data = await response.json();
       if (response.ok) {
+        console.log(data.data.user.id);
+        const newUserId = data.data.user.id;
+        setUserId(newUserId);
         setSuccessMessage("Registration successful! Redirecting...");
         setTimeout(() => {
           onLogin(role);
-          redirectToDashboard(role);
+          redirectToDashboard(role, newUserId);  // ✅ Redirect with userId
         }, 1500);
       } else {
         setError(data.message || "Signup failed");

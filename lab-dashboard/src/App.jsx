@@ -46,7 +46,7 @@ const MainLayout = ({ isLoggedIn, userRole, handleLogout, handleLogin }) => {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/admin-dashboard" element={<DashboardPage />} />
-          <Route path="/patient-dashboard" element={<CustomerDashboard />} />
+          <Route path="/patient-dashboard/:patientId" element={<CustomerDashboard />} /> {/* 🔹 Fixed here */}
           <Route path="/appointments" element={<AppointmentsPage />} />
           <Route path="/login" element={<AuthPage onLogin={handleLogin} />} />
           <Route path="*" element={<HomePage />} />
