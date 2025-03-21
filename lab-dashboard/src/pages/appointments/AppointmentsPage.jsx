@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 
-// Hardcoded labId for now (replace with dynamic value if needed)
-const LAB_ID = '007e5c76-f89d-4704-9c0f-6c3c1fb1a184';
+// Static Lab Info
+const labHeadId = "3e5b971e-5cd4-4f48-ba5b-f564c7fcddcd";
+const labId = "007e5c76-f89d-4704-9c0f-6c3c1fb1a184";
 
 const STATUS_OPTIONS = ['PENDING', 'CONFIRMED', 'COMPLETED', 'REPORT_GENERATED', 'HOME'];
 
@@ -10,14 +11,18 @@ const AppointmentsPage = () => {
   const [selectedStatus, setSelectedStatus] = useState('PENDING');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [staffList, setStaffList] = useState([]);
+  const [assigning, setAssigning] = useState({});
+  const [selectedStaff, setSelectedStaff] = useState({});
 
+  // Fetch appointments based on selectedStatus
   const fetchAppointments = async () => {
     setLoading(true);
     setError('');
     try {
       const queryParams = new URLSearchParams({
         status: selectedStatus,
-        labId: LAB_ID,
+        labId,
       }).toString();
 
       const response = await fetch(`http://localhost:8000/api/appointments/status?${queryParams}`);
@@ -28,7 +33,7 @@ const AppointmentsPage = () => {
       }
 
       const data = await response.json();
-      setAppointments(data.data);  // ✅ FIX: set data.data instead of data
+      setAppointments(data.data);
     } catch (err) {
       console.error('Error fetching appointments:', err);
       setError('Failed to fetch appointments. Please try again.');
@@ -37,14 +42,82 @@ const AppointmentsPage = () => {
     }
   };
 
+  // Fetch staff list once on mount
+  const fetchStaffList = async () => {
+    try {
+      const response = await fetch("http://localhost:8000/api/lab-assistant/assistants", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          labId,
+          headId: labHeadId,
+        }),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        setStaffList(data.data);
+      } else {
+        console.error("Error fetching staff:", data.message);
+      }
+    } catch (error) {
+      console.error("Error fetching staff:", error);
+    }
+  };
+
+  // Assign home appointment with minimal payload
+  const assignHomeAppointment = async (appointmentId) => {
+    const assistantId = selectedStaff[appointmentId];
+    if (!assistantId) {
+      alert("Please select a staff member.");
+      return;
+    }
+
+    setAssigning((prev) => ({ ...prev, [appointmentId]: true }));
+    try {
+      const response = await fetch("http://localhost:8000/api/appointments/assign-home", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          appointmentId,
+          assistantId,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.error("Error assigning appointment:", data.message);
+        alert(data.message || "Failed to assign appointment.");
+      } else {
+        alert("Appointment assigned successfully!");
+        fetchAppointments(); // Refresh appointments
+      }
+    } catch (error) {
+      console.error("Error assigning appointment:", error);
+      alert("An error occurred. Please try again.");
+    } finally {
+      setAssigning((prev) => ({ ...prev, [appointmentId]: false }));
+    }
+  };
+
   useEffect(() => {
     fetchAppointments();
   }, [selectedStatus]);
+
+  useEffect(() => {
+    fetchStaffList();
+  }, []);
 
   return (
     <div className="p-6">
       <h2 className="text-2xl font-bold mb-4">Appointments</h2>
 
+      {/* Status Tabs */}
       <div className="flex space-x-2 mb-4">
         {STATUS_OPTIONS.map((status) => (
           <button
@@ -62,32 +135,60 @@ const AppointmentsPage = () => {
       {loading ? (
         <p>Loading appointments...</p>
       ) : error ? (
-        <p className="text-red-600">{error}</p>
-      ) : appointments.length === 0 ? (
-        <p>No appointments found for status: {selectedStatus}</p>
+        <p className="text-red-500">{error}</p>
       ) : (
-        <table className="min-w-full bg-white border border-gray-300">
-          <thead>
-            <tr className="bg-gray-100">
-              <th className="py-2 px-4 border-b">ID</th>
-              <th className="py-2 px-4 border-b">Status</th>
-              <th className="py-2 px-4 border-b">Test Type</th>
-              <th className="py-2 px-4 border-b">Home Appointment</th>
-            </tr>
-          </thead>
-          <tbody>
-            {appointments.map((appointment) => (
-              <tr key={appointment.id} className="hover:bg-gray-50">
-                <td className="py-2 px-4 border-b">{appointment.id}</td>
-                <td className="py-2 px-4 border-b">{appointment.status}</td>
-                <td className="py-2 px-4 border-b">{appointment.testType}</td>
-                <td className="py-2 px-4 border-b">
-                  {appointment.homeAppointment ? 'Yes' : 'No'}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div className="space-y-4">
+          {appointments.map((appt) => (
+            <div
+              key={appt.id}
+              className="bg-white p-4 rounded shadow border flex flex-col md:flex-row md:items-center justify-between"
+            >
+              <div>
+                <h3 className="text-lg font-semibold">{appt.patientName}</h3>
+                <p className="text-gray-600 text-sm">{new Date(appt.date).toLocaleString()}</p>
+                <p className="text-gray-700 text-sm mt-1">Status: {appt.status}</p>
+                {appt.homeAppointment && (
+                  <p className="text-green-600 text-sm mt-1 font-medium">🏠 Home Appointment</p>
+                )}
+              </div>
+
+              {/* Conditionally render assignment UI */}
+              {appt.homeAppointment ? (
+                <div className="mt-3 md:mt-0 flex items-center space-x-2">
+                  <select
+                    value={selectedStaff[appt.id] || ''}
+                    onChange={(e) =>
+                      setSelectedStaff((prev) => ({
+                        ...prev,
+                        [appt.id]: e.target.value,
+                      }))
+                    }
+                    className="border rounded px-3 py-2"
+                  >
+                    <option value="">Select Staff</option>
+                    {staffList.map((staff) => (
+                      <option key={staff.id} value={staff.id}>
+                        {staff.name}
+                      </option>
+                    ))}
+                  </select>
+
+                  <button
+                    onClick={() => assignHomeAppointment(appt.id)}
+                    className={`px-4 py-2 rounded bg-green-500 text-white hover:bg-green-600 ${
+                      assigning[appt.id] ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
+                    disabled={assigning[appt.id]}
+                  >
+                    {assigning[appt.id] ? 'Assigning...' : 'Assign'}
+                  </button>
+                </div>
+              ) : (
+                <p className="mt-2 md:mt-0 text-sm text-gray-500 italic">No home assignment</p>
+              )}
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );

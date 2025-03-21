@@ -7,7 +7,7 @@ const Sidebar = ({ isLoggedIn, onLogout, role }) => {
   const navigate = useNavigate();
 
   const menuItems = [
-    { name: "Dashboard", path: "/{role}-dashboard", icon: <Home size={20} /> },
+    { name: "Dashboard", path: `/admin-dashboard`, icon: <Home size={20} /> },
     { name: "Appointments", path: "/appointments", icon: <ClipboardList size={20} /> },
   ];
 

@@ -2,12 +2,9 @@ import React, { useState } from "react";
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import DashboardPage from "./pages/dashboard/Admin/AdminDashboard";
 import AppointmentsPage from "./pages/appointments/AppointmentsPage";
-import StaffPage from "./pages/staff/StaffList";
-import PatientsPage from "./pages/patients/PatientsPage";
 import Sidebar from "./components/layout/Sidebar";
 import HomePage from "./pages/Home/HomePage";
 import CustomerDashboard from "./pages/dashboard/Customer/CustomerDashboard";
-import StaffDashboard from "./pages/dashboard/Staff/StaffDashboard";
 import AuthPage from "./pages/Auth/AuthPage";
 
 const App = () => {
@@ -48,12 +45,9 @@ const MainLayout = ({ isLoggedIn, userRole, handleLogout, handleLogin }) => {
       <div className="flex-1 overflow-y-auto bg-gray-100 p-6">
         <Routes>
           <Route path="/" element={<HomePage />} />
-          <Route path="/staff-dashboard" element={<StaffDashboard />} />
           <Route path="/admin-dashboard" element={<DashboardPage />} />
           <Route path="/patient-dashboard" element={<CustomerDashboard />} />
           <Route path="/appointments" element={<AppointmentsPage />} />
-          <Route path="/staff" element={<StaffPage />} />
-          <Route path="/patients" element={<PatientsPage />} />
           <Route path="/login" element={<AuthPage onLogin={handleLogin} />} />
           <Route path="*" element={<HomePage />} />
         </Routes>
