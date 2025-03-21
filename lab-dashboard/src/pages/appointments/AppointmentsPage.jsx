@@ -1,107 +1,93 @@
-import React, { useState } from "react";
-import { CheckCircle, Calendar, Clock, Trash2, Edit, Save, XCircle } from "lucide-react";
+import React, { useEffect, useState } from 'react';
+
+// Hardcoded labId for now (replace with dynamic value if needed)
+const LAB_ID = '007e5c76-f89d-4704-9c0f-6c3c1fb1a184';
+
+const STATUS_OPTIONS = ['PENDING', 'CONFIRMED', 'COMPLETED', 'REPORT_GENERATED', 'HOME'];
 
 const AppointmentsPage = () => {
-  const [appointments, setAppointments] = useState([
-    { id: 1, patientName: "John Doe", testName: "Blood Test", date: "2025-03-20", time: "10:00", contact: "johndoe@example.com" },
-    { id: 2, patientName: "Jane Smith", testName: "X-Ray", date: "2025-03-21", time: "14:30", contact: "janesmith@example.com" },
-  ]);
-  const [rescheduleId, setRescheduleId] = useState(null);
-  const [newSchedule, setNewSchedule] = useState({ date: "", time: "" });
+  const [appointments, setAppointments] = useState([]);
+  const [selectedStatus, setSelectedStatus] = useState('PENDING');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  // Accept Appointment
-  const handleAccept = (id, patientName, contact) => {
-    alert(`Appointment for ${patientName} successfully confirmed!\nNotification sent to ${contact}`);
+  const fetchAppointments = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const queryParams = new URLSearchParams({
+        status: selectedStatus,
+        labId: LAB_ID,
+      }).toString();
+
+      const response = await fetch(`http://localhost:8000/api/appointments/status?${queryParams}`);
+
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(`Server Error: ${response.status} - ${text}`);
+      }
+
+      const data = await response.json();
+      setAppointments(data.data);  // ✅ FIX: set data.data instead of data
+    } catch (err) {
+      console.error('Error fetching appointments:', err);
+      setError('Failed to fetch appointments. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Open Reschedule Popup
-  const handleReschedule = (id) => {
-    setRescheduleId(id);
-  };
-
-  // Close Reschedule Popup
-  const closeReschedule = () => {
-    setRescheduleId(null);
-    setNewSchedule({ date: "", time: "" });
-  };
-
-  // Save New Schedule
-  const saveReschedule = () => {
-    setAppointments(appointments.map((appt) => appt.id === rescheduleId ? { ...appt, ...newSchedule } : appt));
-    closeReschedule();
-  };
-
-  // Delete Appointment
-  const handleDelete = (id) => {
-    setAppointments(appointments.filter((appt) => appt.id !== id));
-  };
+  useEffect(() => {
+    fetchAppointments();
+  }, [selectedStatus]);
 
   return (
-    <div className="p-8 min-h-screen bg-gradient-to-br from-gray-200 to-gray-100 flex flex-col items-center relative">
-      <h2 className="text-4xl font-extrabold text-blue-700 drop-shadow-lg mb-6">Appointments</h2>
+    <div className="p-6">
+      <h2 className="text-2xl font-bold mb-4">Appointments</h2>
 
-      {/* Appointment Table */}
-      <div className="bg-white shadow-2xl rounded-2xl p-6 w-full max-w-4xl overflow-hidden">
-        <table className="w-full text-left">
+      <div className="flex space-x-2 mb-4">
+        {STATUS_OPTIONS.map((status) => (
+          <button
+            key={status}
+            onClick={() => setSelectedStatus(status)}
+            className={`px-4 py-2 rounded ${
+              selectedStatus === status ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'
+            }`}
+          >
+            {status}
+          </button>
+        ))}
+      </div>
+
+      {loading ? (
+        <p>Loading appointments...</p>
+      ) : error ? (
+        <p className="text-red-600">{error}</p>
+      ) : appointments.length === 0 ? (
+        <p>No appointments found for status: {selectedStatus}</p>
+      ) : (
+        <table className="min-w-full bg-white border border-gray-300">
           <thead>
-            <tr className="bg-blue-600 text-white">
-              <th className="p-3">Patient</th>
-              <th className="p-3">Test</th>
-              <th className="p-3">Date</th>
-              <th className="p-3">Time</th>
-              <th className="p-3 text-center">Actions</th>
+            <tr className="bg-gray-100">
+              <th className="py-2 px-4 border-b">ID</th>
+              <th className="py-2 px-4 border-b">Status</th>
+              <th className="py-2 px-4 border-b">Test Type</th>
+              <th className="py-2 px-4 border-b">Home Appointment</th>
             </tr>
           </thead>
           <tbody>
-            {appointments.map((appt) => (
-              <tr key={appt.id} className="border-b hover:bg-gray-100 transition">
-                <td className="p-3 font-medium">{appt.patientName}</td>
-                <td className="p-3 text-blue-600">{appt.testName}</td>
-                <td className="p-3">{appt.date}</td>
-                <td className="p-3">{appt.time}</td>
-                <td className="p-3 text-center flex justify-center gap-4">
-                  <button onClick={() => handleAccept(appt.id, appt.patientName, appt.contact)}
-                    className="bg-green-500 text-white px-3 py-2 rounded-lg shadow-md hover:bg-green-600 flex items-center gap-1">
-                    <CheckCircle size={16} /> Accept
-                  </button>
-                  <button onClick={() => handleReschedule(appt.id)}
-                    className="bg-yellow-500 text-white px-3 py-2 rounded-lg shadow-md hover:bg-yellow-600 flex items-center gap-1">
-                    <Clock size={16} /> Reschedule
-                  </button>
-                  <button onClick={() => handleDelete(appt.id)}
-                    className="bg-red-500 text-white px-3 py-2 rounded-lg shadow-md hover:bg-red-600 flex items-center gap-1">
-                    <Trash2 size={16} /> Delete
-                  </button>
+            {appointments.map((appointment) => (
+              <tr key={appointment.id} className="hover:bg-gray-50">
+                <td className="py-2 px-4 border-b">{appointment.id}</td>
+                <td className="py-2 px-4 border-b">{appointment.status}</td>
+                <td className="py-2 px-4 border-b">{appointment.testType}</td>
+                <td className="py-2 px-4 border-b">
+                  {appointment.homeAppointment ? 'Yes' : 'No'}
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-      </div>
-
-      {/* Reschedule Popup */}
-      {rescheduleId !== null && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white p-6 rounded-lg shadow-xl w-96">
-            <h2 className="text-xl font-bold mb-4">Reschedule Appointment</h2>
-            <input
-              type="date"
-              className="border px-3 py-2 rounded w-full mb-3"
-              value={newSchedule.date}
-              onChange={(e) => setNewSchedule({ ...newSchedule, date: e.target.value })}
-            />
-            <input
-              type="time"
-              className="border px-3 py-2 rounded w-full mb-3"
-              value={newSchedule.time}
-              onChange={(e) => setNewSchedule({ ...newSchedule, time: e.target.value })}
-            />
-            <div className="flex justify-end gap-4">
-              <button onClick={saveReschedule} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Save</button>
-              <button onClick={closeReschedule} className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Cancel</button>
-            </div>
-          </div>
-        </div>
       )}
     </div>
   );
