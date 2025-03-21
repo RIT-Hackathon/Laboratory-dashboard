@@ -1,31 +1,39 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 
 // Static Lab Info
 const labHeadId = "3e5b971e-5cd4-4f48-ba5b-f564c7fcddcd";
 const labId = "007e5c76-f89d-4704-9c0f-6c3c1fb1a184";
 
-const STATUS_OPTIONS = ['PENDING', 'CONFIRMED', 'COMPLETED', 'REPORT_GENERATED', 'HOME'];
+const STATUS_OPTIONS = [
+  "PENDING",
+  "CONFIRMED",
+  "COMPLETED",
+  "REPORT_GENERATED",
+  "HOME",
+];
 
 const AppointmentsPage = () => {
   const [appointments, setAppointments] = useState([]);
-  const [selectedStatus, setSelectedStatus] = useState('PENDING');
+  const [selectedStatus, setSelectedStatus] = useState("PENDING");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [staffList, setStaffList] = useState([]);
   const [assigning, setAssigning] = useState({});
   const [selectedStaff, setSelectedStaff] = useState({});
+  const [confirming, setConfirming] = useState({});
 
-  // Fetch appointments based on selectedStatus
   const fetchAppointments = async () => {
     setLoading(true);
-    setError('');
+    setError("");
     try {
       const queryParams = new URLSearchParams({
         status: selectedStatus,
         labId,
       }).toString();
 
-      const response = await fetch(`http://localhost:8000/api/appointments/status?${queryParams}`);
+      const response = await fetch(
+        `http://localhost:8000/api/appointments/status?${queryParams}`
+      );
 
       if (!response.ok) {
         const text = await response.text();
@@ -35,26 +43,28 @@ const AppointmentsPage = () => {
       const data = await response.json();
       setAppointments(data.data);
     } catch (err) {
-      console.error('Error fetching appointments:', err);
-      setError('Failed to fetch appointments. Please try again.');
+      console.error("Error fetching appointments:", err);
+      setError("Failed to fetch appointments. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  // Fetch staff list once on mount
   const fetchStaffList = async () => {
     try {
-      const response = await fetch("http://localhost:8000/api/lab-assistant/assistants", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          labId,
-          headId: labHeadId,
-        }),
-      });
+      const response = await fetch(
+        "http://localhost:8000/api/lab-assistant/assistants",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            labId,
+            headId: labHeadId,
+          }),
+        }
+      );
 
       const data = await response.json();
       if (response.ok) {
@@ -67,7 +77,6 @@ const AppointmentsPage = () => {
     }
   };
 
-  // Assign home appointment with minimal payload
   const assignHomeAppointment = async (appointmentId) => {
     const assistantId = selectedStaff[appointmentId];
     if (!assistantId) {
@@ -77,16 +86,19 @@ const AppointmentsPage = () => {
 
     setAssigning((prev) => ({ ...prev, [appointmentId]: true }));
     try {
-      const response = await fetch("http://localhost:8000/api/appointments/assign-home", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          appointmentId,
-          assistantId,
-        }),
-      });
+      const response = await fetch(
+        "http://localhost:8000/api/appointments/assign-home",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            appointmentId,
+            assistantId,
+          }),
+        }
+      );
 
       const data = await response.json();
 
@@ -95,13 +107,44 @@ const AppointmentsPage = () => {
         alert(data.message || "Failed to assign appointment.");
       } else {
         alert("Appointment assigned successfully!");
-        fetchAppointments(); // Refresh appointments
+        fetchAppointments();
       }
     } catch (error) {
       console.error("Error assigning appointment:", error);
       alert("An error occurred. Please try again.");
     } finally {
       setAssigning((prev) => ({ ...prev, [appointmentId]: false }));
+    }
+  };
+
+  const confirmAppointment = async (appointmentId) => {
+    setConfirming((prev) => ({ ...prev, [appointmentId]: true }));
+    try {
+      const response = await fetch(
+        "http://localhost:8000/api/appointments/confirm",
+        {
+          method: "PATCH", // Corrected to PATCH
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ appointmentId }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.error("Error confirming appointment:", data.message);
+        alert(data.message || "Failed to confirm appointment.");
+      } else {
+        alert("Appointment confirmed!");
+        fetchAppointments();
+      }
+    } catch (error) {
+      console.error("Error confirming appointment:", error);
+      alert("An error occurred. Please try again.");
+    } finally {
+      setConfirming((prev) => ({ ...prev, [appointmentId]: false }));
     }
   };
 
@@ -124,7 +167,9 @@ const AppointmentsPage = () => {
             key={status}
             onClick={() => setSelectedStatus(status)}
             className={`px-4 py-2 rounded ${
-              selectedStatus === status ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'
+              selectedStatus === status
+                ? "bg-blue-600 text-white"
+                : "bg-gray-200 text-gray-700"
             }`}
           >
             {status}
@@ -145,47 +190,78 @@ const AppointmentsPage = () => {
             >
               <div>
                 <h3 className="text-lg font-semibold">{appt.patientName}</h3>
-                <p className="text-gray-600 text-sm">{new Date(appt.date).toLocaleString()}</p>
-                <p className="text-gray-700 text-sm mt-1">Status: {appt.status}</p>
-                {appt.homeAppointment && (
-                  <p className="text-green-600 text-sm mt-1 font-medium">🏠 Home Appointment</p>
+                <p className="text-gray-600 text-sm">
+                  {new Date(appt.date).toLocaleString()}
+                </p>
+                <p className="text-gray-700 text-sm mt-1">
+                  Status: {appt.status}
+                </p>
+
+                {appt.homeAppointment && selectedStatus !== "PENDING" && (
+                  <p className="text-green-600 text-sm mt-1 font-medium">
+                    🏠 Home Appointment
+                  </p>
                 )}
               </div>
 
-              {/* Conditionally render assignment UI */}
-              {appt.homeAppointment ? (
-                <div className="mt-3 md:mt-0 flex items-center space-x-2">
-                  <select
-                    value={selectedStaff[appt.id] || ''}
-                    onChange={(e) =>
-                      setSelectedStaff((prev) => ({
-                        ...prev,
-                        [appt.id]: e.target.value,
-                      }))
-                    }
-                    className="border rounded px-3 py-2"
-                  >
-                    <option value="">Select Staff</option>
-                    {staffList.map((staff) => (
-                      <option key={staff.id} value={staff.id}>
-                        {staff.name}
-                      </option>
-                    ))}
-                  </select>
-
+              {/* Action Section */}
+              <div className="mt-3 md:mt-0 flex items-center space-x-2">
+                {selectedStatus === "PENDING" ? (
                   <button
-                    onClick={() => assignHomeAppointment(appt.id)}
-                    className={`px-4 py-2 rounded bg-green-500 text-white hover:bg-green-600 ${
-                      assigning[appt.id] ? 'opacity-50 cursor-not-allowed' : ''
+                    onClick={() => confirmAppointment(appt.id)}
+                    className={`px-4 py-2 rounded bg-blue-500 text-white hover:bg-blue-600 ${
+                      confirming[appt.id]
+                        ? "opacity-50 cursor-not-allowed"
+                        : ""
                     }`}
-                    disabled={assigning[appt.id]}
+                    disabled={confirming[appt.id]}
                   >
-                    {assigning[appt.id] ? 'Assigning...' : 'Assign'}
+                    {confirming[appt.id] ? "Confirming..." : "Confirm"}
                   </button>
-                </div>
-              ) : (
-                <p className="mt-2 md:mt-0 text-sm text-gray-500 italic">No home assignment</p>
-              )}
+                ) : appt.homeAppointment ? (
+                  selectedStatus === "CONFIRMED" ? (
+                    <p className="text-sm text-green-700 font-medium">
+                      Assigned for Home Visit ✅
+                    </p>
+                  ) : (
+                    <>
+                      <select
+                        value={selectedStaff[appt.id] || ""}
+                        onChange={(e) =>
+                          setSelectedStaff((prev) => ({
+                            ...prev,
+                            [appt.id]: e.target.value,
+                          }))
+                        }
+                        className="border rounded px-3 py-2"
+                      >
+                        <option value="">Select Staff</option>
+                        {staffList.map((staff) => (
+                          <option key={staff.id} value={staff.id}>
+                            {staff.name}
+                          </option>
+                        ))}
+                      </select>
+
+                      <button
+                        onClick={() => assignHomeAppointment(appt.id)}
+                        className={`px-4 py-2 rounded bg-green-500 text-white hover:bg-green-600 ${
+                          assigning[appt.id]
+                            ? "opacity-50 cursor-not-allowed"
+                            : ""
+                        }`}
+                        disabled={assigning[appt.id]}
+                      >
+                        {assigning[appt.id] ? "Assigning..." : "Assign"}
+                      </button>
+                    </>
+                  )
+                ) : (
+                  <p className="text-sm text-gray-500 italic">
+                    No home assignment
+                  </p>
+                )}
+              </div>
             </div>
           ))}
         </div>

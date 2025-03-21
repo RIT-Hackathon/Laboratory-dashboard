@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Plus, Trash2, Home } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import StaffPopupForm from "./StaffPopUpForm";
 
 const labHeadId = "3e5b971e-5cd4-4f48-ba5b-f564c7fcddcd";
@@ -12,7 +12,7 @@ const Dashboard = () => {
   // 🔹 Fetch staff list on mount
   useEffect(() => {
     fetchStaffList();
-  }, []); 
+  }, []);
 
   const fetchStaffList = async () => {
     try {
@@ -90,46 +90,6 @@ const Dashboard = () => {
       console.error("Error deleting staff:", error);
     }
   };
-  const [appointmentId, setAppointmentId] = useState("41d8cc97-4c8f-43e8-8a36-2548615d1583");
-  const [assistantId, setAssistantId] = useState("818e4472-d5ee-4e77-a0b5-e4c6ed2a339c");
-  const [loading, setLoading] = useState(false);
-  const [responseMessage, setResponseMessage] = useState(null);
-  const [errorMessage, setErrorMessage] = useState(null);
-
-  const handleAssignHomeAppointment = async () => {
-    setLoading(true);
-    setResponseMessage(null);
-    setErrorMessage(null);
-
-    try {
-      const response = await fetch("http://localhost:8000/api/appointments/assign-home", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          appointmentId: appointmentId,
-          assistantId: assistantId,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        // Server returned error
-        console.error("❌ Error response:", data);
-        setErrorMessage(data.message || "Something went wrong.");
-      } else {
-        console.log("✅ Success response:", data);
-        setResponseMessage(data.message);
-      }
-    } catch (error) {
-      console.error("❌ Fetch error:", error);
-      setErrorMessage("Network error or server unavailable.");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <div className="p-6">
@@ -156,16 +116,7 @@ const Dashboard = () => {
               <p className="text-sm text-gray-600">{staff.phone}</p>
             </div>
 
-            <div className="mt-4 flex justify-between">
-              <button
-                onClick={() => handleAssignHomeAppointment(staff.id)}
-                className="flex items-center text-green-500 hover:text-green-700"
-                title="Assign Home Appointment"
-              >
-                <Home size={20} className="mr-1" />
-                Assign Home
-              </button>
-
+            <div className="mt-4 flex justify-end">
               <button
                 onClick={() => handleDeleteStaff(staff.id)}
                 className="text-red-500 hover:text-red-700"
