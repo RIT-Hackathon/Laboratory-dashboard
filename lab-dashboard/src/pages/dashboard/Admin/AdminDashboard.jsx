@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import StaffPopupForm from "./StaffPopUpForm";
+import { useParams } from "react-router-dom";  // ✅ Import useParams
 
-const labHeadId = "3e5b971e-5cd4-4f48-ba5b-f564c7fcddcd";
 const labId = "007e5c76-f89d-4704-9c0f-6c3c1fb1a184";
 
 const Dashboard = () => {
+  const { adminId } = useParams();  // ✅ Extract adminId from URL
   const [showStaffForm, setShowStaffForm] = useState(false);
   const [staffList, setStaffList] = useState([]);
 
-  // 🔹 Fetch staff list on mount
   useEffect(() => {
     fetchStaffList();
-  }, []);
+  }, [adminId]);  // ✅ Refetch when adminId changes
 
   const fetchStaffList = async () => {
     try {
@@ -23,12 +23,13 @@ const Dashboard = () => {
         },
         body: JSON.stringify({
           labId,
-          headId: labHeadId,
+          headId: adminId, 
         }),
       });
 
       const data = await response.json();
       if (response.ok) {
+        console.log(data);
         setStaffList(data.data);
       } else {
         console.error("Error fetching staff:", data.message);
@@ -46,8 +47,8 @@ const Dashboard = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          labHeadId,
-          labId,
+          labHeadId: adminId, // ✅ Use dynamic adminId
+          labId,     // ✅ Use dynamic adminId
           name: newStaff.name,
           email: newStaff.email,
           phone: newStaff.phone,
@@ -56,7 +57,6 @@ const Dashboard = () => {
 
       const data = await response.json();
       if (response.ok) {
-        console.log("Staff added:", data);
         fetchStaffList();
       } else {
         console.error("Error adding staff:", data.message);
@@ -74,14 +74,13 @@ const Dashboard = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          labHeadId,
+          labHeadId: adminId, // ✅ Use dynamic adminId
           assistantId,
         }),
       });
 
       const data = await response.json();
       if (response.ok) {
-        console.log("Staff deleted:", data);
         fetchStaffList();
       } else {
         console.error("Error deleting staff:", data.message);
@@ -129,7 +128,6 @@ const Dashboard = () => {
         ))}
       </div>
 
-      {/* Staff Form Modal */}
       {showStaffForm && (
         <StaffPopupForm
           onClose={() => setShowStaffForm(false)}

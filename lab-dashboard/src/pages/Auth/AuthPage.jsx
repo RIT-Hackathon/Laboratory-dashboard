@@ -24,16 +24,37 @@ const AuthPage = ({ onLogin }) => {
 
   // ✅ Modified redirectToDashboard to accept dynamic userId
   const redirectToDashboard = (userRole, userId = "") => {
-    if (userRole === "admin") {
-      navigate("/admin-dashboard");
+    if (role === "admin") {
+      navigate(`/admin-dashboard/${userId}`); // ✅ Dynamic Admin Redirect
     } else if (userRole === "staff") {
       navigate("/staff-dashboard");
     } else {
-      navigate(`/patient-dashboard/${userId}`); // Dynamic redirection for patient
+      navigate(`/patient-dashboard/${userId}`); // ✅ Dynamic Patient Redirect
     }
   };
-
-  // ✅ Handle user login with userId stored and used in redirection
+  
+  // const handleLogin = async () => {
+  //   try {
+  //     const response = await fetch(`${API_BASE}/sign-in`, {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({ email: user.email, password: user.password }),
+  //     });
+  
+  //     const data = await response.json();
+  //     if (response.ok) {
+  //       localStorage.setItem("user", JSON.stringify(data)); // Store user data
+  //       const loggedInUserId = data.data.user.id;  // ✅ Get userId from API
+  //       onLogin(data.data.user.role);  // Use role from API response
+  //       redirectToDashboard(data.data.user.role, loggedInUserId);  // ✅ Redirect with userId
+  //     } else {
+  //       setError(data.message || "Invalid credentials");
+  //     }
+  //   } catch (error) {
+  //     setError("Network error. Please try again.");
+  //   }
+  // };
+  
   const handleLogin = async () => {
     try {
       const response = await fetch(`${API_BASE}/sign-in`, {
@@ -41,15 +62,14 @@ const AuthPage = ({ onLogin }) => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: user.email, password: user.password }),
       });
-
+  
       const data = await response.json();
-      console.log(data);
       if (response.ok) {
-        localStorage.setItem("user", JSON.stringify(data)); // Store user data
-        const loggedInUserId = data.data.user.id;  // ✅ Get userId from API
-        setUserId(loggedInUserId);  // Save in state if needed elsewhere
-        onLogin(data.role);  // Use role from API response
-        redirectToDashboard(data.role, loggedInUserId);  // ✅ Redirect with userId
+        localStorage.setItem("user", JSON.stringify(data.data.user)); // ✅ Store user info in localStorage
+        console.log(data.data.user);
+        const { id, role } = data.data.user; // Extract userId and role
+        onLogin(role);  
+        redirectToDashboard(role, id); // ✅ Redirect based on role
       } else {
         setError(data.message || "Invalid credentials");
       }
@@ -57,6 +77,7 @@ const AuthPage = ({ onLogin }) => {
       setError("Network error. Please try again.");
     }
   };
+  
 
   // Handle user signup
   const handleSignup = async () => {
