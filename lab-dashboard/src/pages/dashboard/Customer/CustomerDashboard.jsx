@@ -36,7 +36,7 @@ const CustomerDashboard = () => {
       setDocuments(data.data.data); // Nested array
     } catch (err) {
       console.error("❌ Error fetching documents:", err);
-      // No need to set error; documents are optional
+      // Optional, don't set error
     }
   };
 
